@@ -1,0 +1,39 @@
+{
+	"name": "NetflixDatalakedata",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Netlfix_Datalake_Data",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"netflix_sink_folder": {
+				"type": "String"
+			},
+			"netflix_sink_filename": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().netflix_sink_filename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().netflix_sink_folder",
+					"type": "Expression"
+				},
+				"fileSystem": "bronze"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

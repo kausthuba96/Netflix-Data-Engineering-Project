@@ -1,0 +1,198 @@
+{
+	"name": "Netflix_Data_Pipeline",
+	"properties": {
+		"activities": [
+			{
+				"name": "NetflixForEach",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "Netflix_Validation",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.p_array",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "NetflixCopyData_copy1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "HttpReadSettings",
+										"requestMethod": "GET"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "NetflixHttpdata",
+									"type": "DatasetReference",
+									"parameters": {
+										"netflix_source_url": {
+											"value": "@item().netflix_source_url",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "NetflixDatalakedata",
+									"type": "DatasetReference",
+									"parameters": {
+										"netflix_sink_folder": {
+											"value": "@item().netflix_sink_folder",
+											"type": "Expression"
+										},
+										"netflix_sink_filename": {
+											"value": "@item().netflix_sink_filename",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "NetflixWebData",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://raw.githubusercontent.com/kausthuba96/Netflix-Data-Engineering-Project/refs/heads/main/Netflix_Azure_Data_Engineering_Project-main/Netflix_Azure_Data_Engineering_Project-main/RawData_AND_Notebooks/netflix_directors.csv"
+				}
+			},
+			{
+				"name": "Set variable1",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "NetflixWebData",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "netflixVariable",
+					"value": {
+						"value": "@activity('NetflixWebData').output.Response",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Netflix_Validation",
+				"type": "Validation",
+				"dependsOn": [
+					{
+						"activity": "Set variable1",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "rawNetflixdata",
+						"type": "DatasetReference"
+					},
+					"timeout": "0.12:00:00",
+					"sleep": 10
+				}
+			}
+		],
+		"parameters": {
+			"p_array": {
+				"type": "array",
+				"defaultValue": [
+					{
+						"netflix_source_url": "netflix_directors.csv",
+						"netflix_sink_folder": "Netflix_directors",
+						"netflix_sink_filename": "netflix_directors.csv"
+					},
+					{
+						"netflix_source_url": "netflix_countries.csv",
+						"netflix_sink_folder": "Netflix_countries",
+						"netflix_sink_filename": "netflix_countries.csv"
+					},
+					{
+						"netflix_source_url": "netflix_category.csv",
+						"netflix_sink_folder": "Netflix_categories",
+						"netflix_sink_filename": "netflix_category.csv"
+					},
+					{
+						"netflix_source_url": "netflix_cast.csv",
+						"netflix_sink_folder": "Netflix_cast",
+						"netflix_sink_filename": "netflix_cast.csv"
+					}
+				]
+			}
+		},
+		"variables": {
+			"netflixVariable": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2025-02-25T05:05:07Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

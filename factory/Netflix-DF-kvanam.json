@@ -1,0 +1,9 @@
+{
+	"name": "Netflix-DF-kvanam",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "0fcb6265-a4a1-4051-ba8e-76b08d770e28",
+		"tenantId": "23fdc31a-8fcf-4750-ae8b-82037e278d67"
+	}
+}
